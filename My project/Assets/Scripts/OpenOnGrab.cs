@@ -11,8 +11,8 @@ public class OpenOnGrab : MonoBehaviour
     public float openAngle = 140f;
 
     [Header("Motion")]
-    public float speed = 360f;                 // deg/sec
-    public Vector3 localAxis = new(0, 0, 1); // change to (0,1,0) if needed
+    public float speed = 360f;
+    public Vector3 localAxis = new(0, 0, 1); 
 
     UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable grab;
     float targetAngle, currentAngle;
@@ -38,14 +38,10 @@ public class OpenOnGrab : MonoBehaviour
         grab.selectEntered.RemoveListener(OnGrab);
         grab.selectExited.RemoveListener(OnRelease);
     }
-
-    // UnityAction<SelectEnterEventArgs>
     void OnGrab(SelectEnterEventArgs _)
     {
         targetAngle = openAngle;
     }
-
-    // UnityAction<SelectExitEventArgs>
     void OnRelease(SelectExitEventArgs _)
     {
         targetAngle = closedAngle;
