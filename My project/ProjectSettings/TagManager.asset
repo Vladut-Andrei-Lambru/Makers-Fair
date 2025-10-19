@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - Anchor
+  - NailHead
   layers:
   - Default
   - TransparentFX
@@ -17,8 +18,8 @@ TagManager:
   - 
   - 
   - Nails
-  - 
-  - 
+  - Hammer
+  - Planks
   - 
   - 
   - 
