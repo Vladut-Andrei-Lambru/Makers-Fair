@@ -7,7 +7,7 @@ public class SocketListener : MonoBehaviour
     public Rigidbody hostPlank;       // the plank’s rigidbody
     public Transform holeTransform;   // this transform (the hole/orientation)
 
-    void Reset()
+    private void Reset()
     {
         if (!socket) socket = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactors.XRSocketInteractor>();
         if (!holeTransform) holeTransform = transform;

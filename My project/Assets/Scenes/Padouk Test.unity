@@ -5341,6 +5341,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   hammerRb: {fileID: 924304312}
   nailHeadTag: NailHead
+--- !u!65 &687508125
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 687508121}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 0.01}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &692397217
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -13274,6 +13295,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6805879543743534039, guid: e508111a75ea6844ba9082b6fa4f9f9c, type: 3}
+      propertyPath: m_Constraints
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -13310,7 +13335,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -13328,7 +13353,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b49f60f72f678e24d8a0a8f1abae7720, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  hostPlank: {fileID: 0}
+  hostPlank: {fileID: 1746628606}
+--- !u!54 &1746628606 stripped
+Rigidbody:
+  m_CorrespondingSourceObject: {fileID: 6805879543743534039, guid: e508111a75ea6844ba9082b6fa4f9f9c, type: 3}
+  m_PrefabInstance: {fileID: 1746628599}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1754699343
 GameObject:
   m_ObjectHideFlags: 0
@@ -15521,6 +15551,31 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2078959960}
   m_CullTransparentMesh: 1
+--- !u!1 &2079906370 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4128959785716653849, guid: e508111a75ea6844ba9082b6fa4f9f9c, type: 3}
+  m_PrefabInstance: {fileID: 9119286280458027497}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &2079906371 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3665232775519262091, guid: e508111a75ea6844ba9082b6fa4f9f9c, type: 3}
+  m_PrefabInstance: {fileID: 9119286280458027497}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2079906375
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2079906370}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79b9622063138b14499d2279ee9f24fa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SocketListener
+  socket: {fileID: 0}
+  hostPlank: {fileID: 3745622627231449318}
+  holeTransform: {fileID: 2079906371}
 --- !u!1 &2088060547
 GameObject:
   m_ObjectHideFlags: 0
@@ -17578,6 +17633,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1469426063448803193, guid: 89f093c34b137ae49bb1dd2b4e2fee4a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 687508123}
+    - targetCorrespondingSourceObject: {fileID: 1469426063448803193, guid: 89f093c34b137ae49bb1dd2b4e2fee4a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 687508125}
   m_SourcePrefab: {fileID: 100100000, guid: 89f093c34b137ae49bb1dd2b4e2fee4a, type: 3}
 --- !u!1001 &3257631069116033653
 PrefabInstance:
@@ -18296,6 +18354,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2459405869866567999, guid: e508111a75ea6844ba9082b6fa4f9f9c, type: 3}
   m_PrefabInstance: {fileID: 9119286280458027497}
   m_PrefabAsset: {fileID: 0}
+--- !u!54 &3745622627231449318 stripped
+Rigidbody:
+  m_CorrespondingSourceObject: {fileID: 6805879543743534039, guid: e508111a75ea6844ba9082b6fa4f9f9c, type: 3}
+  m_PrefabInstance: {fileID: 9119286280458027497}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &4029767096739082718
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -18628,12 +18691,20 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 826431701}
     - target: {fileID: 3841385991183412582, guid: 68ccc39c2957f954e8718c8b896cbe29, type: 3}
+      propertyPath: stage
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3841385991183412582, guid: 68ccc39c2957f954e8718c8b896cbe29, type: 3}
       propertyPath: socket
       value: 
       objectReference: {fileID: 131995819}
     - target: {fileID: 4164058056945421189, guid: 68ccc39c2957f954e8718c8b896cbe29, type: 3}
       propertyPath: m_Name
       value: Nail
+      objectReference: {fileID: 0}
+    - target: {fileID: 6226973855237540576, guid: 68ccc39c2957f954e8718c8b896cbe29, type: 3}
+      propertyPath: m_UseGravity
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6226973855237540576, guid: 68ccc39c2957f954e8718c8b896cbe29, type: 3}
       propertyPath: m_IncludeLayers.m_Bits
@@ -18880,6 +18951,14 @@ PrefabInstance:
       propertyPath: m_MovementType
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 6805879543743534039, guid: e508111a75ea6844ba9082b6fa4f9f9c, type: 3}
+      propertyPath: m_UseGravity
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6805879543743534039, guid: e508111a75ea6844ba9082b6fa4f9f9c, type: 3}
+      propertyPath: m_Constraints
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6840745238517831803, guid: e508111a75ea6844ba9082b6fa4f9f9c, type: 3}
       propertyPath: m_InteractionLayers.m_Bits
       value: 4294967295
@@ -18887,7 +18966,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4128959785716653849, guid: e508111a75ea6844ba9082b6fa4f9f9c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2079906375}
   m_SourcePrefab: {fileID: 100100000, guid: e508111a75ea6844ba9082b6fa4f9f9c, type: 3}
 --- !u!4 &9131688449649986390 stripped
 Transform:

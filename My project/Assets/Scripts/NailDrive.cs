@@ -61,7 +61,7 @@ public class NailDrive : MonoBehaviour
         // Move the shaft along its local forward (tip direction) INTO the wood.
         // Assume shaft forward is +Z. Adjust if your model differs.
         Vector3 local = shaft.localPosition;
-        local.z = -drivenDepth; // push in
+        local.y = -drivenDepth; // push in
         shaft.localPosition = local;
     }
 
