@@ -9,6 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 692788533196570408}
+  - component: {fileID: 3356412502016065966}
+  - component: {fileID: 2800557292315443305}
   m_Layer: 0
   m_Name: JointTarget
   m_TagString: Untagged
@@ -25,12 +27,46 @@ Transform:
   m_GameObject: {fileID: 1161760082567796462}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.00808, y: 0, z: 0}
+  m_LocalPosition: {x: -0.00808, y: -0, z: -0.011}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2459405869866567999}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3356412502016065966
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1161760082567796462}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b49f60f72f678e24d8a0a8f1abae7720, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  hostPlank: {fileID: 6805879543743534039}
+--- !u!65 &2800557292315443305
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1161760082567796462}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.0007765946, y: 0.0043335124, z: 0.01}
+  m_Center: {x: 0.000648681, y: -0.00042412104, z: -3.28772e-17}
 --- !u!1 &1211672682980243953
 GameObject:
   m_ObjectHideFlags: 0
@@ -61,15 +97,15 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1211672682980243953}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071067}
+  m_LocalRotation: {x: -0.7069834, y: 0, z: 0, w: 0.7072302}
   m_LocalPosition: {x: 2.03, y: 1.0780001, z: 1.54}
-  m_LocalScale: {x: 75.668304, y: 18, z: 2.597999}
+  m_LocalScale: {x: 420.37946, y: 99.999985, z: 14.433324}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 3665232775519262091}
   - {fileID: 692788533196570408}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -89.98, y: 0, z: 0}
 --- !u!33 &4207182876865939269
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -140,7 +176,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.XR.Interaction.Toolkit::UnityEngine.XR.Interaction.Toolkit.Interactors.XRSocketInteractor
   m_InteractionManager: {fileID: 0}
   m_InteractionLayers:
-    m_Bits: 1073741824
+    m_Bits: 3489660929
   m_Handedness: 0
   m_AttachTransform: {fileID: 3665232775519262091}
   m_KeepSelectedTargetValid: 1
@@ -215,10 +251,10 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 0
+  m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 126
+  m_Constraints: 0
   m_CollisionDetection: 2
 --- !u!114 &4531027232642143105
 MonoBehaviour:
@@ -235,7 +271,7 @@ MonoBehaviour:
   m_InteractionManager: {fileID: 0}
   m_Colliders: []
   m_InteractionLayers:
-    m_Bits: 268435456
+    m_Bits: 4294967295
   m_DistanceCalculationMode: 1
   m_SelectMode: 0
   m_FocusMode: 1
@@ -300,7 +336,7 @@ MonoBehaviour:
   m_SnapToColliderVolume: 1
   m_ReinitializeDynamicAttachEverySingleGrab: 1
   m_AttachEaseInTime: 0.15
-  m_MovementType: 0
+  m_MovementType: 2
   m_PredictedVisualsTransform: {fileID: 0}
   m_VelocityDamping: 1
   m_VelocityScale: 1
@@ -359,6 +395,7 @@ GameObject:
   - component: {fileID: 1366257110934209930}
   - component: {fileID: 6321068945246271558}
   - component: {fileID: 2827321181481341274}
+  - component: {fileID: 5870861769893891754}
   m_Layer: 0
   m_Name: Cylinder
   m_TagString: Untagged
@@ -458,3 +495,18 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.1
   m_Center: {x: -0.0000020696054, y: 0.00000019914201, z: -5.697834e-13}
+--- !u!114 &5870861769893891754
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4128959785716653849}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79b9622063138b14499d2279ee9f24fa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SocketListener
+  socket: {fileID: 6840745238517831803}
+  hostPlank: {fileID: 6805879543743534039}
+  holeTransform: {fileID: 3665232775519262091}

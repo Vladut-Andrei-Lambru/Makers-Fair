@@ -1,25 +1,26 @@
 using UnityEngine;
-
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 public class NailDrive : MonoBehaviour
 {
     [Header("Setup")]
-    public Transform shaft;                 // the mesh that slides in
-    public Transform head;                  // collider at hammerable head
-    public UnityEngine.XR.Interaction.Toolkit.Interactors.XRSocketInteractor socket;       // socket on Plank A (set at runtime)
-    public float totalDepth = 0.03f;        // how deep the nail travels into wood
+    public Transform shaft;                  // The mesh that slides in
+    public Transform head;                   // Collider at hammerable head
+    public XRSocketInteractor socket;        // Socket on Plank A (set at runtime)
+    public float totalDepth = 0.03f;         // How deep the nail travels into wood
     public Rigidbody rb;
 
     [Header("Stages")]
-    [Range(0,3)] public int stage = 0;      // 0,1,2,3
-    public float hitIncrement = 0.011f;     // each good hit depth
-    public float minHitSpeed = 1.2f;        // hammer relative speed threshold
+    [Range(0, 3)] public int stage = 0;      // 0,1,2,3
+    public float hitIncrement = 0.011f;      // Each good hit depth
+    public float minHitSpeed = 1.2f;         // Hammer relative speed threshold
 
-    // runtime
-    Transform holeTransform;                // where the socket is on Plank A
-    Rigidbody plankA;
-    Rigidbody plankB;                       // detected by trigger on Plank B join point
-    float drivenDepth = 0f;                 // current depth 0..totalDepth
+    // Runtime
+    Transform holeTransform;                 // Where the socket is on Plank A
+    Rigidbody plankA;                        // Host plank (socket plank)
+    Rigidbody plankB;                        // Detected by trigger on Plank B join point
+    float drivenDepth = 0f;                  // Current depth 0..totalDepth
     bool isSocketed = false;
 
     void Reset()
@@ -28,29 +29,41 @@ public class NailDrive : MonoBehaviour
         if (!shaft) shaft = transform;
     }
 
-    void OnEnable()
+    public void BindSocket(XRSocketInteractor s, Transform hole, Rigidbody hostPlank)
     {
-        // if the nail starts already socketed, XR will fire events after play starts.
-        // we’ll detect in SocketListener below.
-    }
-
-    public void BindSocket(UnityEngine.XR.Interaction.Toolkit.Interactors.XRSocketInteractor s, Transform hole, Rigidbody hostPlank)
-    {
-        socket = s; holeTransform = hole; plankA = hostPlank;
+        socket = s;
+        holeTransform = hole;
+        plankA = hostPlank;
         isSocketed = true;
-        // lock orientation/position relative to the hole
+
+        // ✅ Parent nail directly to the plank now – no physics needed
+        transform.SetParent(plankA.transform, true);
+
+        // Disable rigidbody motion entirely
+        rb.isKinematic = true;
+        rb.useGravity = false;
+
         AlignToHole();
     }
 
     public void UnbindSocket()
     {
-        socket = null; holeTransform = null; plankA = null; isSocketed = false;
+        socket = null;
+        holeTransform = null;
+        plankA = null;
+        isSocketed = false;
+
+        // Detach and re-enable physics
+        transform.SetParent(null);
+        rb.isKinematic = false;
+        rb.useGravity = true;
     }
 
     void AlignToHole()
     {
         if (!holeTransform) return;
-        // align nail head flush to hole, pointing into plank along hole forward
+
+        // Align nail head flush to hole, pointing into plank along hole forward
         transform.position = holeTransform.position;
         transform.rotation = holeTransform.rotation;
         ApplyVisualDepth();
@@ -66,7 +79,10 @@ public class NailDrive : MonoBehaviour
     }
 
     public void RegisterJoinCandidate(Rigidbody otherPlank) => plankB = otherPlank;
-    public void ClearJoinCandidate(Rigidbody otherPlank) { if (plankB == otherPlank) plankB = null; }
+    public void ClearJoinCandidate(Rigidbody otherPlank)
+    {
+        if (plankB == otherPlank) plankB = null;
+    }
 
     // Called by HammerHit on collision if speed/angle is valid
     public void DriveByHit(float relativeSpeed, Vector3 hitDir)
@@ -74,13 +90,13 @@ public class NailDrive : MonoBehaviour
         if (!isSocketed || plankA == null) return;
         if (relativeSpeed < minHitSpeed) return;
 
-        // Optional: require the hammer to strike along nail axis (within angle)
+        // Require the hammer to strike roughly along nail axis
         float axisAlign = Vector3.Dot(transform.forward, -hitDir.normalized);
         if (axisAlign < 0.6f) return; // too glancing
 
         drivenDepth = Mathf.Clamp(drivenDepth + hitIncrement, 0f, totalDepth);
 
-        // update stage thresholds
+        // Update stage thresholds
         int newStage = 0;
         if (drivenDepth > 0.001f) newStage = 1;                     // barely
         if (drivenDepth > totalDepth * 0.5f) newStage = 2;           // halfway
@@ -89,12 +105,13 @@ public class NailDrive : MonoBehaviour
         if (newStage != stage)
         {
             stage = newStage;
-            // You can trigger sounds/VFX here per stage
+            // TODO: trigger sound or VFX for each stage here
         }
 
         ApplyVisualDepth();
 
-        if (stage == 3) TryConnectPlanks();
+        if (stage == 3)
+            TryConnectPlanks();
     }
 
     void TryConnectPlanks()
@@ -108,11 +125,11 @@ public class NailDrive : MonoBehaviour
 
         // Nail is now “locked” in; make it kinematic and parent to plankA
         rb.isKinematic = true;
+        rb.useGravity = false;
         transform.SetParent(plankA.transform, true);
 
-        // (Optional) Disable grabbing on both planks or just leave them dynamic.
-        // (Optional) Disable grabbing the nail:
-        var grab = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
+        // Disable grabbing the nail now that it's fixed
+        var grab = GetComponent<XRGrabInteractable>();
         if (grab) grab.enabled = false;
     }
 }
