@@ -1,4 +1,4 @@
-//sharpcoderblog.com @2019
+
 Shader "FX/Hologram Shader"
 {
 	Properties
