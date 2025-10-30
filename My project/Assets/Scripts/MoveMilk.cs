@@ -1,15 +1,14 @@
-using System;
 using UnityEngine;
 
 public class MoveMilk : MonoBehaviour
 {
     [SerializeField] private GameObject milkCube;
-    private ParticleSystem milkParticles;
+    private ParticleSystem _milkParticles;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        milkParticles = GetComponent<ParticleSystem>();
-        milkParticles.Stop();
+        _milkParticles = GetComponent<ParticleSystem>();
+        _milkParticles.Stop();
     }
 
     // Update is called once per frame
@@ -25,7 +24,7 @@ public class MoveMilk : MonoBehaviour
     {
         if (other.gameObject == milkCube)
         {
-            milkParticles.Play();
+            _milkParticles.Play();
         }
     }
 
@@ -33,7 +32,7 @@ public class MoveMilk : MonoBehaviour
     {
         if (other.gameObject == milkCube)
         {
-            milkParticles.Stop();
+            _milkParticles.Stop();
         }
     }
 }
