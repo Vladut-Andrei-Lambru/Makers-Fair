@@ -49,7 +49,9 @@ Shader "Custom/NewUnlitUniversalRenderPipelineShader"
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
-            sampler2D _MainTex;
+            //sampler2D _MainTex;
+            
+            UNITY_DECLARE_SCREENSPACE_TEXTURE(_MainTex);
             float4 _MainTex_ST;
 
             v2f vert (appdata v)
