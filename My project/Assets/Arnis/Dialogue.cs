@@ -14,13 +14,13 @@ public class Dialogue : MonoBehaviour
     {
         textComponent.text = string.Empty;
         StartDialogue();
+
+        textComponent.text = string.Empty;
+        NextDialogue();
     }
 
-    void Update()
+    public void NextDialogue()
     {
-
-        if (Input.GetButtonDown("Submit"))
-        {
             if (textComponent.text == lines[index])
             {
                 NextLine();
@@ -30,7 +30,6 @@ public class Dialogue : MonoBehaviour
                 StopAllCoroutines();
                 textComponent.text = lines[index];
             }
-        }
     }
 
     void StartDialogue()
