@@ -1,29 +1,81 @@
 using System;
 using System.Collections;
+using TMPro;
+using Unity.AppUI.UI;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit.Inputs.Readers;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion.Turning;
 using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
+using Canvas = UnityEngine.Canvas;
+using Text = UnityEngine.UI.Text;
 
 public class ChangeLocomotion : MonoBehaviour
 {
-    private ControllerInputActionManager LeftController, RightController;
+    [SerializeField] XRInputButtonReader m_MenuInput = new XRInputButtonReader("Menu");
+    
+    public XRInputButtonReader jumpInput
+    {
+        get => m_MenuInput;
+        set => XRInputReaderUtility.SetInputProperty(ref m_MenuInput, value, this);
+    }
 
+    
+    private ControllerInputActionManager LeftController, RightController;
+    private GameObject handMenu, camButton, movButton;
+    
+    
     private void Start()
     {
         LeftController = GameObject.Find("Left Controller").GetComponent<ControllerInputActionManager>();
         RightController = GameObject.Find("Right Controller").GetComponent<ControllerInputActionManager>();
+        
+        camButton = GameObject.Find("Camera Button");
+        movButton = GameObject.Find("Movement Button");
+        
+        camButton.GetComponentInChildren<TextMeshProUGUI>().text = "Snap Turn";
+        movButton.GetComponentInChildren<TextMeshProUGUI>().text = "Smooth Movement";
+        
+        handMenu = gameObject.GetComponentInChildren<Canvas>().gameObject;
+        handMenu.SetActive(false);
     }
 
-    void ChangeTurn()
+    private void Update()
+    {
+        if (m_MenuInput.ReadIsPerformed())
+        {
+            handMenu.SetActive(!handMenu.activeSelf);
+        }
+    }
+
+    
+    public void ChangeTurn()
     {
         LeftController.smoothTurnEnabled = !LeftController.smoothTurnEnabled;
         RightController.smoothTurnEnabled = !RightController.smoothTurnEnabled;
+        
+        if (LeftController.smoothTurnEnabled == false)
+        {
+            camButton.GetComponentInChildren<TextMeshProUGUI>().text = "Snap Turn";
+        }
+        else
+        {
+            camButton.GetComponentInChildren<TextMeshProUGUI>().text = "Smooth Turn";
+        }
     }
-
-    void ChangeMovement()
+    
+    public void ChangeMovement()
     {
         LeftController.smoothMotionEnabled = !LeftController.smoothMotionEnabled;
         RightController.smoothMotionEnabled = !RightController.smoothMotionEnabled;
+        
+        if (LeftController.smoothMotionEnabled)
+        {
+            movButton.GetComponentInChildren<TextMeshProUGUI>().text = "Smooth Movement";
+        }
+        else
+        {
+            movButton.GetComponentInChildren<TextMeshProUGUI>().text = "Teleport";
+        }
     }
 }

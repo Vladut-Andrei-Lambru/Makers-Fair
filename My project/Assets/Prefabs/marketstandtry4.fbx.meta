@@ -9,6 +9,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: ClothMat
     second: {fileID: 2100000, guid: cb83e50ab238def42bf97704cd3aa6dd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: WoodMat
+    second: {fileID: 2100000, guid: 1fe8808733adf844cafe401e03e5d73d, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
