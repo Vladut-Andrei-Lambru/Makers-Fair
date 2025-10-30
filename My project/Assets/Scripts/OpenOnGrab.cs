@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 public class OpenOnGrab : MonoBehaviour
 {
@@ -14,45 +15,45 @@ public class OpenOnGrab : MonoBehaviour
     public float speed = 360f;
     public Vector3 localAxis = new(0, 0, 1); 
 
-    UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable grab;
-    float targetAngle, currentAngle;
+    XRGrabInteractable _grab;
+    float _targetAngle, _currentAngle;
 
     void Awake()
     {
-        grab = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
-        currentAngle = closedAngle;
-        targetAngle = closedAngle;
+        _grab = GetComponent<XRGrabInteractable>();
+        _currentAngle = closedAngle;
+        _targetAngle = closedAngle;
     }
 
     void OnEnable()
     {
-        if (grab == null) grab = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
+        if (_grab == null) _grab = GetComponent<XRGrabInteractable>();
         // XRIT 3.x: use AddListener / RemoveListener
-        grab.selectEntered.AddListener(OnGrab);
-        grab.selectExited.AddListener(OnRelease);
+        _grab.selectEntered.AddListener(OnGrab);
+        _grab.selectExited.AddListener(OnRelease);
     }
 
     void OnDisable()
     {
-        if (grab == null) return;
-        grab.selectEntered.RemoveListener(OnGrab);
-        grab.selectExited.RemoveListener(OnRelease);
+        if (_grab == null) return;
+        _grab.selectEntered.RemoveListener(OnGrab);
+        _grab.selectExited.RemoveListener(OnRelease);
     }
     void OnGrab(SelectEnterEventArgs _)
     {
-        targetAngle = openAngle;
+        _targetAngle = openAngle;
     }
     void OnRelease(SelectExitEventArgs _)
     {
-        targetAngle = closedAngle;
+        _targetAngle = closedAngle;
     }
 
     void Update()
     {
-        currentAngle = Mathf.MoveTowardsAngle(currentAngle, targetAngle, speed * Time.deltaTime);
+        _currentAngle = Mathf.MoveTowardsAngle(_currentAngle, _targetAngle, speed * Time.deltaTime);
         if (hingeRight != null)
         {
-            var q = Quaternion.AngleAxis(currentAngle, localAxis.normalized);
+            var q = Quaternion.AngleAxis(_currentAngle, localAxis.normalized);
             hingeRight.localRotation = q;
         }
     }
