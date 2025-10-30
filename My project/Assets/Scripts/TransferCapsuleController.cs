@@ -11,24 +11,24 @@ public class TransferCapsuleController : MonoBehaviour
     [Header("Timing")]
     [SerializeField] private float delayBeforeLoad = 0.8f;
 
-    private bool playerInside = false;
-    private bool transferring = false;
+    private bool _playerInside;
+    private bool _transferring;
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player")) playerInside = true;
+        if (other.CompareTag("Player")) _playerInside = true;
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Player")) playerInside = false;
+        if (other.CompareTag("Player")) _playerInside = false;
     }
 
     // Hook this to the button's "Select Entered" (or call from another script)
     public void BeginTransfer()
     {
-        if (transferring || !playerInside) return;
-        transferring = true;
+        if (_transferring || !_playerInside) return;
+        _transferring = true;
         if (door) door.SetActive(true); // "close" instantly
         StartCoroutine(LoadNext());
     }

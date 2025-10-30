@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Anchor
   - NailHead
+  - HammerHead
   layers:
   - Default
   - TransparentFX
@@ -19,7 +20,7 @@ TagManager:
   - 
   - Nails
   - Hammer
-  - Planks
+  - Plank
   - 
   - 
   - 
@@ -37,7 +38,7 @@ TagManager:
   - 
   - 
   - 
-  - 
+  - XR Simulation
   - 
   m_SortingLayers:
   - name: Default
