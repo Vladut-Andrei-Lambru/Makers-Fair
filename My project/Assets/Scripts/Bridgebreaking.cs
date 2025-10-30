@@ -3,15 +3,15 @@ using UnityEngine;
 public class Bridgebreaking : MonoBehaviour
 {
     [SerializeField] private float maxMass;
-    private float totalMass;
+    private float _totalMass;
     void OnTriggerEnter(Collider other)
     {
         if (other.GetComponent<Rigidbody>() != null)
         {
-            totalMass += other.GetComponent<Rigidbody>().mass;
+            _totalMass += other.GetComponent<Rigidbody>().mass;
         }
 
-        if (totalMass >= maxMass)
+        if (_totalMass >= maxMass)
         {
             foreach (var part in GetComponentsInChildren<Transform>())
             {
@@ -24,7 +24,7 @@ public class Bridgebreaking : MonoBehaviour
     {
         if (other.GetComponent<Rigidbody>() != null)
         {
-            totalMass -= other.GetComponent<Rigidbody>().mass;
+            _totalMass -= other.GetComponent<Rigidbody>().mass;
         }
     }
 }
