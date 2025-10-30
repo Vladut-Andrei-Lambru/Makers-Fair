@@ -6,7 +6,8 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 [DisallowMultipleComponent]
 public class NailBehavior : MonoBehaviour
 {
-    [Header("Setup")] public Transform visual;
+    [Header("Setup")]
+    public Transform visual;
     public Transform nailTip;
     public Collider hammerHead;
     public XRGrabInteractable grab;
@@ -17,16 +18,49 @@ public class NailBehavior : MonoBehaviour
     private Rigidbody _rb;
     private int _hitCount;
     private bool _welded;
+    private bool _inSocket;
     private HashSet<Rigidbody> inTrigger = new();
+    private WheelSocket _currentSocket;
 
     void Awake()
     {
         _rb = GetComponent<Rigidbody>() ?? gameObject.AddComponent<Rigidbody>();
         if (!grab) grab = GetComponent<XRGrabInteractable>();
-        _rb.useGravity = true;
+        _rb.useGravity = true;  // Normal gravity
         _rb.isKinematic = false;
         _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         _rb.interpolation = RigidbodyInterpolation.Interpolate;
+        
+        grab.selectExited.AddListener(_ => OnReleased());
+    }
+
+    void OnReleased()
+    {
+        // Check if nail is in a wheel socket
+        CheckForSocket();
+    }
+
+    void CheckForSocket()
+    {
+        Collider[] hits = Physics.OverlapSphere(transform.position, 0.05f);
+        foreach (var hit in hits)
+        {
+            var socket = hit.GetComponent<WheelSocket>();
+            if (socket != null && !socket.IsOccupied)
+            {
+                socket.AttachNail(this);
+                _currentSocket = socket;
+                _inSocket = true;
+                
+                // Snap nail into socket position
+                _rb.isKinematic = true;
+                transform.position = socket.transform.position;
+                transform.rotation = socket.transform.rotation;
+                
+                Debug.Log("[Nail] Snapped into wheel socket");
+                break;
+            }
+        }
     }
 
     void OnTriggerEnter(Collider other)
@@ -51,6 +85,13 @@ public class NailBehavior : MonoBehaviour
 
     void Drive()
     {
+        // If in socket, make it dynamic so it can be hammered
+        if (_inSocket && _rb.isKinematic)
+        {
+            _rb.isKinematic = false;
+            _rb.useGravity = false; // Don't fall while hammering
+        }
+        
         if (++_hitCount >= hitsToLock)
             StartCoroutine(Weld());
         if (visual) visual.localPosition = Vector3.forward * (depthPerHit * _hitCount);
@@ -77,30 +118,46 @@ public class NailBehavior : MonoBehaviour
 
         yield return new WaitForFixedUpdate();
 
-        if (inTrigger.Count != 2)
+        if (inTrigger.Count < 1 || inTrigger.Count > 2)
         {
-            Debug.Log("[Nail] Need exactly 2 planks in trigger");
+            Debug.Log($"[Nail] Need 1-2 objects in trigger, found {inTrigger.Count}");
             yield break;
         }
 
         var rbs = new List<Rigidbody>(inTrigger);
         var rbA = rbs[0];
-        var rbB = rbs[1];
+        Rigidbody rbB = rbs.Count > 1 ? rbs[1] : null;
 
-        Physics.IgnoreCollision(rbA.GetComponent<Collider>(), rbB.GetComponent<Collider>(), true);
+        if (rbB != null)
+        {
+            Physics.IgnoreCollision(rbA.GetComponent<Collider>(), rbB.GetComponent<Collider>(), true);
+        }
 
-        // NEW: Check if either plank is already in a group
+        // Check if either object is already in a group
         PlankGroup groupA = null;
         PlankGroup groupB = null;
-
+        
         PlankGroup.plankToGroup.TryGetValue(rbA, out groupA);
-        PlankGroup.plankToGroup.TryGetValue(rbB, out groupB);
+        if (rbB != null)
+            PlankGroup.plankToGroup.TryGetValue(rbB, out groupB);
 
         PlankGroup finalGroup;
 
-        if (groupA != null && groupB != null && groupA != groupB)
+        if (rbB == null)
         {
-            // Both planks are in DIFFERENT groups - merge them
+            // Single object (like attaching wheel to single plank)
+            if (groupA != null)
+            {
+                finalGroup = groupA;
+            }
+            else
+            {
+                finalGroup = PlankGroup.GetOrCreateGroup(rbA);
+            }
+        }
+        else if (groupA != null && groupB != null && groupA != groupB)
+        {
+            // Both objects are in DIFFERENT groups - merge them
             finalGroup = groupA;
             finalGroup.MergeGroup(groupB);
         }
@@ -120,19 +177,26 @@ public class NailBehavior : MonoBehaviour
         {
             // Neither is in a group - create new group
             finalGroup = PlankGroup.GetOrCreateGroup(rbA);
-            finalGroup.AddPlank(rbB);
+            if (rbB != null)
+                finalGroup.AddPlank(rbB);
         }
 
         finalGroup.WeldAll();
 
-        // add grab-sync to every plank
+        // add grab-sync to every object in group
         foreach (var rb in finalGroup.planks)
             if (!rb.TryGetComponent(out PlankGroupGrabSync _))
                 rb.gameObject.AddComponent<PlankGroupGrabSync>();
+
+        // Mark socket as permanently occupied
+        if (_currentSocket != null)
+            _currentSocket.MarkPermanent();
 
         // nail stays forever (no Rigidbody needed for FixedJoint)
         var fj = gameObject.AddComponent<FixedJoint>();
         fj.connectedBody = rbA;
         fj.breakForce = fj.breakTorque = Mathf.Infinity;
+        
+        Debug.Log($"[Nail] Welded {inTrigger.Count} objects into group with {finalGroup.planks.Count} total objects");
     }
 }
