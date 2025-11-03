@@ -19,6 +19,12 @@ public class BridgePusherSocket : MonoBehaviour
     public float breakExplosionForce = 500f;
     public float breakExplosionRadius = 5f;
 
+    [Header("UI Feedback")]
+    public GameObject tooHeavyWarningUI; // Assign a UI panel in inspector
+    public float warningDisplayTime = 2f;
+    public AudioClip tooHeavySound; // Optional warning sound
+    private AudioSource audioSource;
+
     private readonly HashSet<Rigidbody> insideRbs = new();
     private readonly List<Rigidbody> activeGroup = new();
     private bool groupSnapped;
@@ -29,6 +35,16 @@ public class BridgePusherSocket : MonoBehaviour
     {
         var col = GetComponent<Collider>();
         if (col) col.isTrigger = true;
+    }
+
+    void Start()
+    {
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null && tooHeavySound != null)
+            audioSource = gameObject.AddComponent<AudioSource>();
+        
+        if (tooHeavyWarningUI != null)
+            tooHeavyWarningUI.SetActive(false);
     }
 
     void OnTriggerEnter(Collider other)
@@ -77,26 +93,26 @@ public class BridgePusherSocket : MonoBehaviour
         // Add all planks from the group
         activeGroup.AddRange(currentPlankGroup.planks);
 
-        // Find ALL wheels attached to ANY plank in this group
+        // Find ALL wheels AND milk glasses attached to ANY plank in this group
         foreach (var plank in currentPlankGroup.planks)
         {
             if (plank == null) continue;
 
-            // Check all children for wheel sockets
+            // Check all children for sockets
             foreach (Transform child in plank.transform)
             {
                 if (child.name.ToLower().Contains("socket"))
                 {
-                    // Check if socket has a wheel child
+                    // Check if socket has a wheel or milk child
                     foreach (Transform socketChild in child)
                     {
-                        var wheelRb = socketChild.GetComponent<Rigidbody>();
-                        if (wheelRb != null && socketChild.CompareTag("Wheel"))
+                        var itemRb = socketChild.GetComponent<Rigidbody>();
+                        if (itemRb != null && (socketChild.CompareTag("Wheel") || socketChild.CompareTag("Milk")))
                         {
-                            if (!activeGroup.Contains(wheelRb))
+                            if (!activeGroup.Contains(itemRb))
                             {
-                                activeGroup.Add(wheelRb);
-                                Debug.Log($"[BridgePusher] Found wheel: {socketChild.name}");
+                                activeGroup.Add(itemRb);
+                                Debug.Log($"[BridgePusher] Found item: {socketChild.name} (tag: {socketChild.tag})");
                             }
                         }
                     }
@@ -104,7 +120,18 @@ public class BridgePusherSocket : MonoBehaviour
             }
         }
 
-        Debug.Log($"[BridgePusher] Collected bridge: {currentPlankGroup.planks.Count} planks + {activeGroup.Count - currentPlankGroup.planks.Count} wheels = {activeGroup.Count} total rigidbodies");
+        int wheelCount = 0;
+        int milkCount = 0;
+        foreach (var rb in activeGroup)
+        {
+            if (rb != null)
+            {
+                if (rb.CompareTag("Wheel")) wheelCount++;
+                else if (rb.CompareTag("Milk")) milkCount++;
+            }
+        }
+
+        Debug.Log($"[BridgePusher] Collected bridge: {currentPlankGroup.planks.Count} planks + {wheelCount} wheels + {milkCount} milk = {activeGroup.Count} total rigidbodies");
     }
 
     void SnapGroup()
@@ -166,6 +193,7 @@ public class BridgePusherSocket : MonoBehaviour
         if (totalMass > maxBridgeMass)
         {
             Debug.LogWarning($"[BridgePusher] BRIDGE TOO HEAVY! {totalMass:F2} > {maxBridgeMass:F2} - BREAKING!");
+            StartCoroutine(ShowTooHeavyWarning());
             StartCoroutine(BreakBridge());
             return;
         }
@@ -176,6 +204,8 @@ public class BridgePusherSocket : MonoBehaviour
     IEnumerator BreakBridge()
     {
         isAnimating = true;
+
+        yield return new WaitForSeconds(0.5f); // Small delay to let warning show
 
         Vector3 explosionCenter = socketCenter.position;
 
@@ -300,5 +330,25 @@ public class BridgePusherSocket : MonoBehaviour
         groupSnapped = false;
         activeGroup.Clear();
         currentPlankGroup = null;
+    }
+
+    IEnumerator ShowTooHeavyWarning()
+    {
+        if (tooHeavyWarningUI != null)
+        {
+            tooHeavyWarningUI.SetActive(true);
+        }
+
+        if (audioSource != null && tooHeavySound != null)
+        {
+            audioSource.PlayOneShot(tooHeavySound);
+        }
+
+        yield return new WaitForSeconds(warningDisplayTime);
+
+        if (tooHeavyWarningUI != null)
+        {
+            tooHeavyWarningUI.SetActive(false);
+        }
     }
 }
