@@ -940,7 +940,7 @@ PrefabInstance:
     - target: {fileID: -7511558181221131132, guid: 08334c70292ab1146b2b60d956d0d5a5, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: aabcae5965644b044a2069f9a88f0eb5, type: 2}
+      objectReference: {fileID: -876546973899608171, guid: 15bb336cd21d1c54680777f194f23de5, type: 3}
     - target: {fileID: 919132149155446097, guid: 08334c70292ab1146b2b60d956d0d5a5, type: 3}
       propertyPath: m_Name
       value: WoodenTable
@@ -5714,6 +5714,9 @@ MonoBehaviour:
   debugMassCheck: 1
   breakExplosionForce: 400.8
   breakExplosionRadius: 5
+  tooHeavyWarningUI: {fileID: 0}
+  warningDisplayTime: 2
+  tooHeavySound: {fileID: 0}
 --- !u!65 &2059269896
 BoxCollider:
   m_ObjectHideFlags: 0
