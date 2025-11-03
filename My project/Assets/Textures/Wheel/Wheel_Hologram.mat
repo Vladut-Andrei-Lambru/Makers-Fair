@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-4528014461074449056
+--- !u!114 &-4926077809303298043
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
@@ -20,8 +20,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Planks_Material
-  m_Shader: {fileID: -6465566751694194690, guid: decc953c910e61d459183b404adaa6f9, type: 3}
+  m_Name: Wheel_Hologram
+  m_Shader: {fileID: -6465566751694194690, guid: da1730ec168d59a4bac3819606a063af, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -37,20 +37,12 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
-    - _SampleTexture2D_5c308ac4904a486587defd34cdb534d1_Texture_1_Texture2D:
-        m_Texture: {fileID: 2800000, guid: 963790c5a28b6b04eaa41ade757ff935, type: 3}
+    - _SampleTexture2D_aa74f09616b141f08cc0a7f14aef5f14_Texture_1_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 31d7598b4230e8944ac0393f9f6d2417, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _SampleTexture2D_7966b6c272bf47d4911be2aacc46aad3_Texture_1_Texture2D:
-        m_Texture: {fileID: 2800000, guid: 41bdee37b4268be448854736c5211c44, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _SampleTexture2D_acbaa50f910b404f84c7bb0660674331_Texture_1_Texture2D:
-        m_Texture: {fileID: 2800000, guid: d42e131c58f59d14aae59e2beedc6b69, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _SampleTexture2D_ea35264198014dc7b89c049978d255d8_Texture_1_Texture2D:
-        m_Texture: {fileID: 2800000, guid: d42e131c58f59d14aae59e2beedc6b69, type: 3}
+    - _SampleTexture2D_d0686e37222c49ef80a3312b75b99296_Texture_1_Texture2D:
+        m_Texture: {fileID: 2800000, guid: a38afa6def80faa43aefca32b3ba26ce, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
