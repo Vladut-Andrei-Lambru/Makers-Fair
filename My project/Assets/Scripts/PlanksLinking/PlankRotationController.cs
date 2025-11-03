@@ -5,19 +5,31 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 [RequireComponent(typeof(XRGrabInteractable))]
 public class PlankRotationController : MonoBehaviour
 {
-    public InputActionReference joystickInput;
-    public float rotationSpeed = 90f;
+    [Header("Input")] public InputActionReference joystickInput;
+    public InputActionReference cycleAxisButton; // X button to cycle axes
+
+    [Header("Rotation Settings")] public float rotationSpeed = 90f;
     public float deadzone = 0.2f;
 
     private XRGrabInteractable grab;
     private Rigidbody rb;
     private PlankGroupGrabSync grabSync;
 
+    // Axis cycling: 0=X, 1=Y, 2=Z
+    private int currentAxis = 0;
+    private bool buttonWasPressed = false;
+
     void Awake()
     {
         grab = GetComponent<XRGrabInteractable>();
         rb = GetComponent<Rigidbody>();
         grabSync = GetComponent<PlankGroupGrabSync>();
+    }
+
+    void OnEnable()
+    {
+        if (cycleAxisButton != null && cycleAxisButton.action != null)
+            cycleAxisButton.action.Enable();
     }
 
     void Update()
@@ -31,16 +43,31 @@ public class PlankRotationController : MonoBehaviour
             rb.linearVelocity = Vector3.zero;
         }
 
+        // Handle X button press to cycle axes
+        if (cycleAxisButton != null && cycleAxisButton.action != null)
+        {
+            bool buttonPressed = cycleAxisButton.action.ReadValue<float>() > 0.5f;
+
+            if (buttonPressed && !buttonWasPressed)
+            {
+                currentAxis = (currentAxis + 1) % 3; // Cycle: X -> Y -> Z -> X
+                Debug.Log($"[Rotation] Now rotating on axis: {GetAxisName()}");
+            }
+
+            buttonWasPressed = buttonPressed;
+        }
+
+        // Read joystick input
         Vector2 input = joystickInput.action.ReadValue<Vector2>();
         if (input.magnitude < deadzone) return;
 
         float speed = rotationSpeed * Time.deltaTime;
 
-        // LEFT/RIGHT → Rotate around Y axis (spin like a wheel)
-        // UP/DOWN → Rotate around X axis (tilt forward/back)
-        
-        float yRotation = input.x * speed;  // Left/Right = spin
-        float xRotation = -input.y * speed; // Up/Down = tilt (negative so up tilts forward)
+        // Use primary joystick direction (whichever is stronger)
+        float rotationAmount = Mathf.Abs(input.x) > Mathf.Abs(input.y) ? input.x * speed : input.y * speed;
+
+        // Get rotation axis based on current mode
+        Vector3 rotationAxis = GetCurrentAxis();
 
         // Apply rotation
         if (grabSync != null && grabSync.IsLeader())
@@ -48,25 +75,41 @@ public class PlankRotationController : MonoBehaviour
             PlankGroup group = grabSync.GetGroup();
             if (group != null)
             {
-                // Also clear velocities for all planks in the group
+                // Clear velocities for all planks in the group
                 foreach (var plankRb in group.planks)
                 {
                     plankRb.angularVelocity = Vector3.zero;
                     plankRb.linearVelocity = Vector3.zero;
                 }
-                
-                if (Mathf.Abs(yRotation) > 0.01f)
-                    group.RotateGroupOnAxis(Vector3.up, yRotation);
-                if (Mathf.Abs(xRotation) > 0.01f)
-                    group.RotateGroupOnAxis(Vector3.right, xRotation);
+
+                group.RotateGroupOnAxis(rotationAxis, rotationAmount);
                 return;
             }
         }
 
         // Single plank
-        if (Mathf.Abs(yRotation) > 0.01f)
-            transform.Rotate(Vector3.up, yRotation, Space.Self);
-        if (Mathf.Abs(xRotation) > 0.01f)
-            transform.Rotate(Vector3.right, xRotation, Space.Self);
+        transform.Rotate(rotationAxis, rotationAmount, Space.Self);
+    }
+
+    Vector3 GetCurrentAxis()
+    {
+        switch (currentAxis)
+        {
+            case 0: return Vector3.right; // X axis
+            case 1: return Vector3.up; // Y axis
+            case 2: return Vector3.forward; // Z axis
+            default: return Vector3.right;
+        }
+    }
+
+    string GetAxisName()
+    {
+        switch (currentAxis)
+        {
+            case 0: return "X";
+            case 1: return "Y";
+            case 2: return "Z";
+            default: return "X";
+        }
     }
 }
