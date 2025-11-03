@@ -6,7 +6,8 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 [DisallowMultipleComponent]
 public class NailBehavior : MonoBehaviour
 {
-    [Header("Setup")] public Transform visual;
+    [Header("Setup")] 
+    public Transform visual;
     public Transform nailTip;
     public Collider hammerHead;
     public XRGrabInteractable grab;
@@ -27,6 +28,21 @@ public class NailBehavior : MonoBehaviour
         _rb.isKinematic = false;
         _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         _rb.interpolation = RigidbodyInterpolation.Interpolate;
+        
+        if (hammerHead == null)
+        {
+            var hammerGO = GameObject.FindGameObjectWithTag("Hammer");
+            if (hammerGO != null)
+            {
+                var rootCol = hammerGO.GetComponent<Collider>();
+                if (rootCol != null)
+                    hammerHead = rootCol;
+                else
+                {
+                    hammerHead = hammerGO.GetComponentInChildren<Collider>();
+                }
+            }
+        }
     }
 
     void OnTriggerEnter(Collider other)
@@ -61,18 +77,15 @@ public class NailBehavior : MonoBehaviour
         if (_welded) yield break;
         _welded = true;
 
-        // drop grab if held
         if (grab && grab.isSelected && grab.interactionManager != null && grab.firstInteractorSelecting != null)
             grab.interactionManager.SelectExit(grab.firstInteractorSelecting, grab);
 
-        // completely remove grab & physics from the nail
         Destroy(grab);
         Destroy(_rb);
-        // nail becomes non-solid
+
         foreach (var col in GetComponents<Collider>())
             col.enabled = false;
 
-        // push nail visually the last bit
         if (visual) visual.localPosition += Vector3.forward * depthPerHit * (hitsToLock - _hitCount);
 
         yield return new WaitForFixedUpdate();
@@ -89,7 +102,6 @@ public class NailBehavior : MonoBehaviour
 
         Physics.IgnoreCollision(rbA.GetComponent<Collider>(), rbB.GetComponent<Collider>(), true);
 
-        // NEW: Check if either plank is already in a group
         PlankGroup groupA = null;
         PlankGroup groupB = null;
 
@@ -100,39 +112,53 @@ public class NailBehavior : MonoBehaviour
 
         if (groupA != null && groupB != null && groupA != groupB)
         {
-            // Both planks are in DIFFERENT groups - merge them
             finalGroup = groupA;
             finalGroup.MergeGroup(groupB);
         }
         else if (groupA != null)
         {
-            // Only A is in a group - add B to it
             finalGroup = groupA;
             finalGroup.AddPlank(rbB);
         }
         else if (groupB != null)
         {
-            // Only B is in a group - add A to it
             finalGroup = groupB;
             finalGroup.AddPlank(rbA);
         }
         else
         {
-            // Neither is in a group - create new group
             finalGroup = PlankGroup.GetOrCreateGroup(rbA);
             finalGroup.AddPlank(rbB);
         }
 
         finalGroup.WeldAll();
 
-        // add grab-sync to every plank
         foreach (var rb in finalGroup.planks)
+        {
             if (!rb.TryGetComponent(out PlankGroupGrabSync _))
                 rb.gameObject.AddComponent<PlankGroupGrabSync>();
 
-        // nail stays forever (no Rigidbody needed for FixedJoint)
+            // Enable socket children
+            foreach (Transform child in rb.transform)
+            {
+                if (child.name.ToLower().Contains("socket"))
+                {
+                    child.gameObject.SetActive(true);
+                    Debug.Log($"[Nail] Enabled socket: {child.name} on {rb.name}");
+                }
+            }
+        }
+
         var fj = gameObject.AddComponent<FixedJoint>();
         fj.connectedBody = rbA;
         fj.breakForce = fj.breakTorque = Mathf.Infinity;
+
+        // Notify WheelSocketHologram to refresh
+        var wheelHologram = FindFirstObjectByType<WheelSocketHologram>();
+        if (wheelHologram != null)
+        {
+            wheelHologram.OnPlanksJoined(finalGroup);
+            Debug.Log("[Nail] Notified WheelSocketHologram to refresh sockets");
+        }
     }
 }

@@ -2208,17 +2208,6 @@
                 },
                 {
                     "name": "",
-                    "id": "5b4ef08d-9ddd-4f0a-8539-d1114d14d143",
-                    "path": "<XRController>{RightHand}/{Trigger}",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "UI Press Value",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "620cd3c3-a8c2-4a24-825a-ef6eb1cb41ef",
                     "path": "<MetaAimHand>{RightHand}/pinchStrengthIndex",
                     "interactions": "",
@@ -2244,6 +2233,17 @@
                     "id": "e2fbf204-5031-483f-beaa-abf05113dbc7",
                     "path": "<HoloLensHand>{RightHand}/select",
                     "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "UI Press Value",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5b4ef08d-9ddd-4f0a-8539-d1114d14d143",
+                    "path": "<XRController>{RightHand}/{Trigger}",
+                    "interactions": "Press",
                     "processors": "",
                     "groups": "",
                     "action": "UI Press Value",
