@@ -116,6 +116,8 @@ public class PlankGroup : MonoBehaviour
                 // Followers become kinematic and track the leader
                 rb.isKinematic = true;
                 rb.useGravity = false;
+                
+                // Mark as follower (this handles transform updates via PlankGroupGrabSync)
                 rb.GetComponent<PlankGroupGrabSync>()?.MarkFollow(lead);
             }
         }
@@ -162,9 +164,31 @@ public class PlankGroup : MonoBehaviour
         }
     }
 
-// Keep the old method for backwards compatibility
+    // Keep the old method for backwards compatibility
     public void RotateGroup(float angleDegrees)
     {
         RotateGroupOnAxis(Vector3.up, angleDegrees);
+    }
+    
+    
+
+    public void DissolveGroup()
+    {
+        Debug.Log($"[PlankGroup] Dissolving group with {planks.Count} members");
+    
+        // Remove all planks from the dictionary
+        foreach (var plank in planks)
+        {
+            if (plank != null)
+            {
+                plankToGroup.Remove(plank);
+            }
+        }
+    
+        // Clear the planks list
+        planks.Clear();
+    
+        // Destroy this group component
+        Destroy(this);
     }
 }

@@ -7,6 +7,8 @@ TagManager:
   - Anchor
   - NailHead
   - HammerHead
+  - Hammer
+  - Wheel
   layers:
   - Default
   - TransparentFX
@@ -14,7 +16,7 @@ TagManager:
   - Walkable
   - Water
   - UI
-  - 
+  - Wheel
   - 
   - 
   - 
