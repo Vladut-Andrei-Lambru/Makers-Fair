@@ -159,6 +159,10 @@ public class BridgePusherSocket : MonoBehaviour
         // Wait a bit then load main menu
         yield return new WaitForSeconds(delayBeforeSceneLoad);
         
+        // Save result before loading scene
+        PlayerPrefs.SetString("GameResult", "LOST");
+        PlayerPrefs.Save();
+        
         Debug.Log($"[BridgePusher] Loading scene index: {mainMenuSceneIndex}");
         SceneManager.LoadScene(mainMenuSceneIndex);
         
@@ -188,12 +192,13 @@ public class BridgePusherSocket : MonoBehaviour
 
         Debug.Log("[BridgePusher] ✓ Push complete!");
         
-        // Wait a bit then load main menu
         yield return new WaitForSeconds(delayBeforeSceneLoad);
-        
+        PlayerPrefs.SetString("GameResult", "WON");
+        PlayerPrefs.Save();
+    
         Debug.Log($"[BridgePusher] Loading scene index: {mainMenuSceneIndex}");
         SceneManager.LoadScene(mainMenuSceneIndex);
-        
+    
         activeGroup.Clear();
         currentPlankGroup = null;
         isAnimating = false;

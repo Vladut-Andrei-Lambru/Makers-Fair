@@ -1,15 +1,9 @@
-using System;
-using System.Collections;
 using TMPro;
-using Unity.AppUI.UI;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Readers;
-using UnityEngine.XR.Interaction.Toolkit.Locomotion.Turning;
 using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 using Canvas = UnityEngine.Canvas;
-using Text = UnityEngine.UI.Text;
 
 public class ChangeLocomotion : MonoBehaviour
 {
@@ -21,10 +15,15 @@ public class ChangeLocomotion : MonoBehaviour
         set => XRInputReaderUtility.SetInputProperty(ref m_MenuInput, value, this);
     }
 
-    [SerializeField] private Scene parkScene;
+    [Header("Scene Settings")]
+    [SerializeField] private int BasicSceneIndex = 0;
+    
+    [Header("Audio Settings")]
+    [SerializeField] private AudioSource cameraAudioSource; // Assign your camera's AudioSource here
+    
     private ControllerInputActionManager LeftController, RightController;
     private GameObject handMenu, restartButton, quitButton, muteButton, parkButton;
-    
+    private bool isMuted = false;
     
     private void Start()
     {
@@ -43,6 +42,15 @@ public class ChangeLocomotion : MonoBehaviour
         
         handMenu = gameObject.GetComponentInChildren<Canvas>().gameObject;
         handMenu.SetActive(false);
+        
+        if (cameraAudioSource == null)
+        {
+            Camera mainCam = Camera.main;
+            if (mainCam != null)
+            {
+                cameraAudioSource = mainCam.GetComponent<AudioSource>();
+            }
+        }
     }
 
     private void Update()
@@ -55,7 +63,22 @@ public class ChangeLocomotion : MonoBehaviour
 
     public void Mute()
     {
-        Debug.Log("Mute Function");
+        if (cameraAudioSource == null)
+        {
+            return;
+        }
+        
+        isMuted = !isMuted;
+        cameraAudioSource.mute = isMuted;
+        
+        if (muteButton != null)
+        {
+            var text = muteButton.GetComponentInChildren<TextMeshProUGUI>();
+            if (text != null)
+            {
+                text.text = isMuted ? "Unmute Music" : "Mute Music";
+            }
+        }
     }
     
     public void Restart()
@@ -65,41 +88,11 @@ public class ChangeLocomotion : MonoBehaviour
 
     public void Park()
     {
-        SceneManager.LoadScene(parkScene.buildIndex);
+        SceneManager.LoadScene(BasicSceneIndex);
     }
 
     public void Quit()
     {
         Application.Quit();
     }
-    
-    // public void ChangeTurn()
-    // {
-    //     LeftController.smoothTurnEnabled = !LeftController.smoothTurnEnabled;
-    //     RightController.smoothTurnEnabled = !RightController.smoothTurnEnabled;
-    //     
-    //     if (LeftController.smoothTurnEnabled == false)
-    //     {
-    //         camButton.GetComponentInChildren<TextMeshProUGUI>().text = "Snap Turn";
-    //     }
-    //     else
-    //     {
-    //         camButton.GetComponentInChildren<TextMeshProUGUI>().text = "Smooth Turn";
-    //     }
-    // }
-    
-    // public void ChangeMovement()
-    // {
-    //     LeftController.smoothMotionEnabled = !LeftController.smoothMotionEnabled;
-    //     RightController.smoothMotionEnabled = !RightController.smoothMotionEnabled;
-    //     
-    //     if (LeftController.smoothMotionEnabled)
-    //     {
-    //         movButton.GetComponentInChildren<TextMeshProUGUI>().text = "Smooth Movement";
-    //     }
-    //     else
-    //     {
-    //         movButton.GetComponentInChildren<TextMeshProUGUI>().text = "Teleport";
-    //     }
-    // }
 }
