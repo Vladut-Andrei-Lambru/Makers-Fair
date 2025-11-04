@@ -1,50 +1,35 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [DisallowMultipleComponent]
 public class BridgePusherSocket : MonoBehaviour
 {
-    [Header("Socket Setup")]
-    public Transform socketCenter;
-    public float moveDuration = 1.0f;
-    public float pushDistance = 2.0f;
-    public float pushForce = 1000f; // Use force instead of kinematic movement
+    [Header("Win Settings")]
+    public float delayBeforeSceneLoad = 2f;
+    public int mainMenuSceneIndex = 0;
 
-    [Header("Mass & Break Limit")]
+    [Header("Mass Limit")]
     public float maxBridgeMass = 50f;
-    public bool debugMassCheck = true;
+
+    [Header("Push Settings")]
+    public Transform socketCenter;
+    public float moveDuration = 2.0f;
+    public float pushForce = 5000f;
 
     [Header("Break Effects")]
     public float breakExplosionForce = 500f;
-    public float breakExplosionRadius = 5f;
 
-    [Header("UI Feedback")]
-    public GameObject tooHeavyWarningUI; // Assign a UI panel in inspector
-    public float warningDisplayTime = 2f;
-    public AudioClip tooHeavySound; // Optional warning sound
-    private AudioSource audioSource;
-
-    private readonly HashSet<Rigidbody> insideRbs = new();
-    private readonly List<Rigidbody> activeGroup = new();
-    private bool groupSnapped;
-    private bool isAnimating;
+    private readonly HashSet<Rigidbody> insideRbs = new HashSet<Rigidbody>();
+    private readonly List<Rigidbody> activeGroup = new List<Rigidbody>();
     private PlankGroup currentPlankGroup;
+    private bool isAnimating;
 
     void Reset()
     {
         var col = GetComponent<Collider>();
         if (col) col.isTrigger = true;
-    }
-
-    void Start()
-    {
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null && tooHeavySound != null)
-            audioSource = gameObject.AddComponent<AudioSource>();
-        
-        if (tooHeavyWarningUI != null)
-            tooHeavyWarningUI.SetActive(false);
     }
 
     void OnTriggerEnter(Collider other)
@@ -57,298 +42,172 @@ public class BridgePusherSocket : MonoBehaviour
     {
         var rb = other.attachedRigidbody;
         if (rb) insideRbs.Remove(rb);
-
-        if (groupSnapped && !IsAnyInside(activeGroup))
-            ReleaseGroup();
     }
 
-    void Update()
+    public void StartButton()
     {
-        if (groupSnapped || isAnimating) return;
-        if (insideRbs.Count == 0) return;
+        if (isAnimating) return;
 
-        // Find a PlankGroup via one rigidbody
+        // Find PlankGroup in trigger
+        currentPlankGroup = null;
         foreach (var rb in insideRbs)
         {
             if (rb == null) continue;
-
             if (PlankGroup.plankToGroup.TryGetValue(rb, out var g))
             {
                 if (g != null && g.planks.Count > 0)
                 {
                     currentPlankGroup = g;
-                    CollectEntireBridge();
-                    SnapGroup();
-                    groupSnapped = true;
-                    return;
+                    break;
                 }
             }
         }
-    }
 
-    void CollectEntireBridge()
-    {
+        if (currentPlankGroup == null)
+        {
+            Debug.LogWarning("[BridgePusher] No vehicle in zone!");
+            return;
+        }
+
+        // Collect all parts
         activeGroup.Clear();
-
-        // Add all planks from the group
         activeGroup.AddRange(currentPlankGroup.planks);
 
-        // Find ALL wheels AND milk glasses attached to ANY plank in this group
         foreach (var plank in currentPlankGroup.planks)
         {
             if (plank == null) continue;
 
-            // Check all children for sockets
             foreach (Transform child in plank.transform)
             {
                 if (child.name.ToLower().Contains("socket"))
                 {
-                    // Check if socket has a wheel or milk child
                     foreach (Transform socketChild in child)
                     {
-                        var itemRb = socketChild.GetComponent<Rigidbody>();
-                        if (itemRb != null && (socketChild.CompareTag("Wheel") || socketChild.CompareTag("Milk")))
+                        var wheelRb = socketChild.GetComponent<Rigidbody>();
+                        if (wheelRb != null && socketChild.CompareTag("Wheel"))
                         {
-                            if (!activeGroup.Contains(itemRb))
-                            {
-                                activeGroup.Add(itemRb);
-                                Debug.Log($"[BridgePusher] Found item: {socketChild.name} (tag: {socketChild.tag})");
-                            }
+                            if (!activeGroup.Contains(wheelRb))
+                                activeGroup.Add(wheelRb);
                         }
                     }
                 }
             }
         }
 
-        int wheelCount = 0;
-        int milkCount = 0;
-        foreach (var rb in activeGroup)
-        {
-            if (rb != null)
-            {
-                if (rb.CompareTag("Wheel")) wheelCount++;
-                else if (rb.CompareTag("Milk")) milkCount++;
-            }
-        }
-
-        Debug.Log($"[BridgePusher] Collected bridge: {currentPlankGroup.planks.Count} planks + {wheelCount} wheels + {milkCount} milk = {activeGroup.Count} total rigidbodies");
-    }
-
-    void SnapGroup()
-    {
-        Vector3 avg = Vector3.zero;
-        int count = 0;
-        foreach (var rb in activeGroup)
-        {
-            if (rb == null) continue;
-            avg += rb.worldCenterOfMass;
-            count++;
-        }
-        if (count == 0) return;
-        avg /= count;
-
-        Vector3 delta = socketCenter.position - avg;
-
-        // DON'T make them kinematic - just stop their velocities and move them
-        foreach (var rb in activeGroup)
-        {
-            if (rb == null) continue;
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-            rb.transform.position += delta;
-        }
-
-        Debug.Log($"[BridgePusher] Snapped complete bridge with {activeGroup.Count} rigidbodies (kept dynamic).");
-    }
-
-    public void PushButton()
-    {
-        if (!groupSnapped || isAnimating) return;
-
+        // Calculate total mass
         float totalMass = 0f;
-        float plankMass = 0f;
-        float wheelMass = 0f;
-
         foreach (var rb in activeGroup)
         {
             if (rb == null) continue;
-            
-            float mass = rb.mass;
-            totalMass += mass;
-
-            if (rb.CompareTag("Wheel"))
-                wheelMass += mass;
-            else
-                plankMass += mass;
+            totalMass += rb.mass;
         }
 
-        if (debugMassCheck)
-        {
-            Debug.Log($"[BridgePusher] === MASS CHECK ===");
-            Debug.Log($"[BridgePusher] Planks: {plankMass:F2} kg");
-            Debug.Log($"[BridgePusher] Wheels: {wheelMass:F2} kg");
-            Debug.Log($"[BridgePusher] TOTAL: {totalMass:F2} kg / Limit: {maxBridgeMass:F2} kg");
-        }
+        Debug.Log($"[BridgePusher] === MASS CHECK ===");
+        Debug.Log($"[BridgePusher] Vehicle mass: {totalMass:F2} kg");
+        Debug.Log($"[BridgePusher] Limit: {maxBridgeMass:F2} kg");
 
+        // Check if pass or fail
         if (totalMass > maxBridgeMass)
         {
-            Debug.LogWarning($"[BridgePusher] BRIDGE TOO HEAVY! {totalMass:F2} > {maxBridgeMass:F2} - BREAKING!");
-            StartCoroutine(ShowTooHeavyWarning());
+            Debug.LogWarning($"[BridgePusher] ❌ FAIL - TOO HEAVY! {totalMass:F2} > {maxBridgeMass:F2}");
             StartCoroutine(BreakBridge());
-            return;
         }
-
-        StartCoroutine(PushGroup());
+        else
+        {
+            Debug.Log($"[BridgePusher] ✓ PASS - Mass OK!");
+            StartCoroutine(PushGroup());
+        }
     }
 
     IEnumerator BreakBridge()
     {
         isAnimating = true;
-
-        yield return new WaitForSeconds(0.5f); // Small delay to let warning show
-
         Vector3 explosionCenter = socketCenter.position;
 
-        // Break all joints and explode
+        Debug.Log($"[BridgePusher] 💥 BREAKING {activeGroup.Count} objects!");
+
+        // Break all joints
+        foreach (var rb in activeGroup)
+        {
+            if (rb == null) continue;
+            var joints = rb.GetComponents<Joint>();
+            foreach (var j in joints) Destroy(j);
+        }
+
+        yield return new WaitForFixedUpdate();
+
+        // Explode
         foreach (var rb in activeGroup)
         {
             if (rb == null) continue;
 
-            // Destroy all joints (nails and wheel connections)
-            var joints = rb.GetComponents<FixedJoint>();
-            foreach (var joint in joints)
-            {
-                Destroy(joint);
-            }
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
 
-            // Ensure physics is enabled
-            rb.isKinematic = false;
-            rb.useGravity = true;
-
-            // Add explosion force
-            Vector3 explosionDir = (rb.worldCenterOfMass - explosionCenter).normalized;
-            explosionDir.y = Mathf.Abs(explosionDir.y); // Push upward
-            rb.AddForce(explosionDir * breakExplosionForce, ForceMode.Impulse);
+            Vector3 dir = (rb.worldCenterOfMass - explosionCenter).normalized;
+            dir.y = Mathf.Max(0.3f, Mathf.Abs(dir.y));
+            rb.AddForce(dir * breakExplosionForce, ForceMode.Impulse);
             rb.AddTorque(Random.insideUnitSphere * breakExplosionForce * 0.5f, ForceMode.Impulse);
-
-            // Re-enable wheel grabbing
-            var grab = rb.GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
-            if (grab != null)
-            {
-                grab.enabled = true;
-            }
         }
 
-        Debug.Log("[BridgePusher] BRIDGE DESTROYED!");
-
-        // Clear the group data
         if (currentPlankGroup != null)
-        {
             currentPlankGroup.DissolveGroup();
-        }
 
-        ReleaseGroup();
+        activeGroup.Clear();
+        currentPlankGroup = null;
+        
+        // Wait a bit then load main menu
+        yield return new WaitForSeconds(delayBeforeSceneLoad);
+        
+        Debug.Log($"[BridgePusher] Loading scene index: {mainMenuSceneIndex}");
+        SceneManager.LoadScene(mainMenuSceneIndex);
+        
         isAnimating = false;
-
-        yield return null;
     }
 
     IEnumerator PushGroup()
     {
         isAnimating = true;
 
-        // Calculate push direction and target
         Vector3 pushDir = socketCenter.right.normalized;
-        Vector3 startPos = GetAveragePosition();
-        Vector3 targetPos = startPos + pushDir * pushDistance;
-        
-        float duration = moveDuration;
+        Debug.Log($"[BridgePusher] 🚀 Pushing vehicle along X axis");
+
         float elapsed = 0f;
 
-        Debug.Log($"[BridgePusher] Starting push from {startPos} to {targetPos} (distance: {pushDistance}m)");
-
-        // Use physics forces instead of direct position manipulation
-        while (elapsed < duration)
+        while (elapsed < moveDuration)
         {
-            float t = elapsed / duration;
-            
-            // Calculate current average position
-            Vector3 currentPos = GetAveragePosition();
-            
-            // Calculate how far we need to move
-            Vector3 desiredPos = Vector3.Lerp(startPos, targetPos, t);
-            Vector3 neededMove = desiredPos - currentPos;
-            
-            // Apply force to each rigidbody to push towards target
             foreach (var rb in activeGroup)
             {
                 if (rb == null) continue;
-                
-                // Apply force proportional to mass and needed movement
-                Vector3 force = neededMove * (rb.mass * pushForce / duration);
-                rb.AddForce(force * Time.fixedDeltaTime, ForceMode.Force);
-                
-                // Dampen unwanted rotation
-                rb.angularVelocity *= 0.95f;
+                rb.AddForce(pushDir * pushForce * Time.fixedDeltaTime, ForceMode.Force);
             }
 
             elapsed += Time.deltaTime;
-            yield return new WaitForFixedUpdate(); // Use fixed update for physics
+            yield return new WaitForFixedUpdate();
         }
 
-        Debug.Log($"[BridgePusher] Push complete - final position: {GetAveragePosition()}");
-
-        ReleaseGroup();
+        Debug.Log("[BridgePusher] ✓ Push complete!");
+        
+        // Wait a bit then load main menu
+        yield return new WaitForSeconds(delayBeforeSceneLoad);
+        
+        Debug.Log($"[BridgePusher] Loading scene index: {mainMenuSceneIndex}");
+        SceneManager.LoadScene(mainMenuSceneIndex);
+        
+        activeGroup.Clear();
+        currentPlankGroup = null;
         isAnimating = false;
     }
 
-    Vector3 GetAveragePosition()
+    void OnDrawGizmos()
     {
-        Vector3 avg = Vector3.zero;
-        int count = 0;
-        foreach (var rb in activeGroup)
+        if (socketCenter != null)
         {
-            if (rb == null) continue;
-            avg += rb.worldCenterOfMass;
-            count++;
-        }
-        return count > 0 ? avg / count : socketCenter.position;
-    }
-
-    bool IsAnyInside(List<Rigidbody> list)
-    {
-        var col = GetComponent<Collider>();
-        if (!col) return false;
-        foreach (var rb in list)
-            if (rb != null && col.bounds.Contains(rb.transform.position))
-                return true;
-        return false;
-    }
-
-    void ReleaseGroup()
-    {
-        groupSnapped = false;
-        activeGroup.Clear();
-        currentPlankGroup = null;
-    }
-
-    IEnumerator ShowTooHeavyWarning()
-    {
-        if (tooHeavyWarningUI != null)
-        {
-            tooHeavyWarningUI.SetActive(true);
-        }
-
-        if (audioSource != null && tooHeavySound != null)
-        {
-            audioSource.PlayOneShot(tooHeavySound);
-        }
-
-        yield return new WaitForSeconds(warningDisplayTime);
-
-        if (tooHeavyWarningUI != null)
-        {
-            tooHeavyWarningUI.SetActive(false);
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(socketCenter.position, 0.5f);
+            
+            Gizmos.color = Color.red;
+            Gizmos.DrawRay(socketCenter.position, socketCenter.right * 5f);
         }
     }
 }

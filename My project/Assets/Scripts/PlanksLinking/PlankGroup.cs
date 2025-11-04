@@ -176,7 +176,6 @@ public class PlankGroup : MonoBehaviour
     {
         Debug.Log($"[PlankGroup] Dissolving group with {planks.Count} members");
     
-        // Remove all planks from the dictionary
         foreach (var plank in planks)
         {
             if (plank != null)
@@ -185,10 +184,7 @@ public class PlankGroup : MonoBehaviour
             }
         }
     
-        // Clear the planks list
         planks.Clear();
-    
-        // Destroy this group component
         Destroy(this);
     }
 }
