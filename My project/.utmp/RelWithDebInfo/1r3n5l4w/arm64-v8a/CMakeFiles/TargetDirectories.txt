@@ -1,0 +1,5 @@
+D:/Game/2nd-year-vrgame/My project/.utmp/RelWithDebInfo/1r3n5l4w/arm64-v8a/CMakeFiles/edit_cache.dir
+D:/Game/2nd-year-vrgame/My project/.utmp/RelWithDebInfo/1r3n5l4w/arm64-v8a/CMakeFiles/rebuild_cache.dir
+D:/Game/2nd-year-vrgame/My project/.utmp/RelWithDebInfo/1r3n5l4w/arm64-v8a/GameActivity/CMakeFiles/game.dir
+D:/Game/2nd-year-vrgame/My project/.utmp/RelWithDebInfo/1r3n5l4w/arm64-v8a/GameActivity/CMakeFiles/edit_cache.dir
+D:/Game/2nd-year-vrgame/My project/.utmp/RelWithDebInfo/1r3n5l4w/arm64-v8a/GameActivity/CMakeFiles/rebuild_cache.dir

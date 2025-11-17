@@ -102,10 +102,6 @@ public class BridgePusherSocket : MonoBehaviour
             totalMass += rb.mass;
         }
 
-        Debug.Log($"[BridgePusher] === MASS CHECK ===");
-        Debug.Log($"[BridgePusher] Vehicle mass: {totalMass:F2} kg");
-        Debug.Log($"[BridgePusher] Limit: {maxBridgeMass:F2} kg");
-
         // Check if pass or fail
         if (totalMass > maxBridgeMass)
         {

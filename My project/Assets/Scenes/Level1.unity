@@ -1471,6 +1471,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 90547982}
     m_Modifications:
     - target: {fileID: 557696957358317053, guid: b3291ac0f7ab3ec4689971545c1cafe8, type: 3}
+      propertyPath: BasicSceneIndex
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 557696957358317053, guid: b3291ac0f7ab3ec4689971545c1cafe8, type: 3}
       propertyPath: cameraAudioSource
       value: 
       objectReference: {fileID: 2078661554}
